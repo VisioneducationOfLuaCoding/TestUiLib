@@ -1,5 +1,3 @@
-local TweenService = game:GetService("TweenService")
-
 -- Create a ScreenGui
 local screenGui = Instance.new("ScreenGui")
 screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
@@ -110,7 +108,7 @@ local function TabCreate(tabName)
     return tabFrame
 end
 
--- Improved function for creating UI elements with tweens
+-- Function for creating buttons and sliders
 local function CreateButton(parent, buttonName)
     local button = Instance.new("TextButton")
     button.Size = UDim2.new(0, 200, 0, 50)
@@ -200,5 +198,3 @@ local function CreateSlider(parent, sliderName, minValue, maxValue)
 
     return sliderFrame
 end
-
-
