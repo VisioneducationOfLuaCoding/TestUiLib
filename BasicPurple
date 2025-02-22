@@ -1,0 +1,204 @@
+local TweenService = game:GetService("TweenService")
+
+-- Create a ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+-- Create a main frame with acrylic look (dark gray, blurry effect)
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 450, 0, 450)
+mainFrame.Position = UDim2.new(0.5, -225, 0.5, -225)
+mainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45) -- Dark Gray (acrylic look)
+mainFrame.BackgroundTransparency = 0.4 -- Set to 0.4 for transparency
+mainFrame.Parent = screenGui
+
+-- Add UI Corner for rounded edges
+local mainFrameCorner = Instance.new("UICorner")
+mainFrameCorner.CornerRadius = UDim.new(0, 10)
+mainFrameCorner.Parent = mainFrame
+
+-- Create a frame behind the main frame to simulate the glow (larger frame with pink color)
+local glowFrame = Instance.new("Frame")
+glowFrame.Size = UDim2.new(1, 20, 1, 20) -- Slightly larger than mainFrame to give the glow effect
+glowFrame.Position = UDim2.new(0, -10, 0, -10) -- Offset slightly to create a border
+glowFrame.BackgroundColor3 = Color3.fromRGB(255, 0, 255) -- Pink glow color
+glowFrame.BackgroundTransparency = 0.5 -- Semi-transparent glow
+glowFrame.Parent = mainFrame
+
+-- Add a blur effect to simulate the glowing effect
+local blurEffect = Instance.new("BlurEffect")
+blurEffect.Size = 24 -- Controls the size of the blur (higher = more blurred)
+blurEffect.Parent = glowFrame
+
+-- Add UI Corner to the glow frame for rounded edges
+local glowFrameCorner = Instance.new("UICorner")
+glowFrameCorner.CornerRadius = UDim.new(0, 10)
+glowFrameCorner.Parent = glowFrame
+
+-- Add the UIStroke for the pink outline on the main frame
+local uiStroke = Instance.new("UIStroke")
+uiStroke.Thickness = 5 -- Controls the thickness of the outline
+uiStroke.Color = Color3.fromRGB(255, 0, 255) -- Pink color
+uiStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border -- This applies the stroke to the border of the frame
+uiStroke.Parent = mainFrame
+
+-- Create a scrolling frame for tabs' content
+local scrollFrame = Instance.new("ScrollingFrame")
+scrollFrame.Size = UDim2.new(0, 430, 0, 330)
+scrollFrame.Position = UDim2.new(0, 10, 0, 60)
+scrollFrame.CanvasSize = UDim2.new(0, 0, 2, 0)
+scrollFrame.ScrollBarThickness = 10
+scrollFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45) -- Dark Gray
+scrollFrame.BackgroundTransparency = 0.3
+scrollFrame.Parent = mainFrame
+
+-- Add UI Corner to scroll frame
+local scrollFrameCorner = Instance.new("UICorner")
+scrollFrameCorner.CornerRadius = UDim.new(0, 10)
+scrollFrameCorner.Parent = scrollFrame
+
+-- Tab system with smooth transitions
+local tabButtons = {}
+local currentTab = nil
+
+local function TabCreate(tabName)
+    local tabButton = Instance.new("TextButton")
+    tabButton.Size = UDim2.new(0, 100, 0, 40)
+    tabButton.Position = UDim2.new(0, (#tabButtons * 110), 0, 10)
+    tabButton.Text = tabName
+    tabButton.TextScaled = true -- Automatically scale the text to fit the button size
+    tabButton.BackgroundColor3 = Color3.fromRGB(75, 0, 130) -- Purple
+    tabButton.TextColor3 = Color3.fromRGB(255, 255, 255) -- White text
+    tabButton.Font = Enum.Font.GothamBold
+    tabButton.TextSize = 20
+    tabButton.BorderSizePixel = 2
+    tabButton.BorderColor3 = Color3.fromRGB(255, 0, 255) -- Pink outline
+    tabButton.Parent = mainFrame
+
+    -- Add UI Corner to tab button
+    local tabButtonCorner = Instance.new("UICorner")
+    tabButtonCorner.CornerRadius = UDim.new(0, 10)
+    tabButtonCorner.Parent = tabButton
+
+    -- Create a new frame for the tab content
+    local tabFrame = Instance.new("Frame")
+    tabFrame.Size = UDim2.new(1, 0, 1, 0)
+    tabFrame.Position = UDim2.new(0, 0, 0, 0)
+    tabFrame.BackgroundTransparency = 1
+    tabFrame.Visible = false -- Initially hidden
+    tabFrame.Parent = scrollFrame
+
+    table.insert(tabButtons, {Button = tabButton, Frame = tabFrame})
+
+    tabButton.MouseButton1Click:Connect(function()
+        -- Hide all other tabs
+        for _, tab in ipairs(tabButtons) do
+            tab.Frame.Visible = false
+        end
+
+        -- Show the clicked tab with smooth fade-in
+        tabFrame.Visible = true
+        currentTab = tabName
+    end)
+
+    -- Automatically show the first tab when created
+    if #tabButtons == 1 then
+        tabFrame.Visible = true
+        currentTab = tabName
+    end
+
+    return tabFrame
+end
+
+-- Improved function for creating UI elements with tweens
+local function CreateButton(parent, buttonName)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(0, 200, 0, 50)
+    button.Position = UDim2.new(0.5, -100, 0, 20)
+    button.Text = buttonName
+    button.BackgroundColor3 = Color3.fromRGB(75, 0, 130) -- Purple
+    button.TextColor3 = Color3.fromRGB(255, 255, 255) -- White text
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 20
+    button.BorderSizePixel = 2
+    button.BorderColor3 = Color3.fromRGB(255, 0, 255) -- Pink outline
+    button.Parent = parent
+
+    -- Add UI Corner to button
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim.new(0, 10)
+    buttonCorner.Parent = button
+
+    return button
+end
+
+local function CreateSlider(parent, sliderName, minValue, maxValue)
+    local sliderFrame = Instance.new("Frame")
+    sliderFrame.Size = UDim2.new(0, 200, 0, 25)  -- Skinnier slider (width is smaller)
+    sliderFrame.Position = UDim2.new(0.5, -100, 0, 90)
+    sliderFrame.BackgroundColor3 = Color3.fromRGB(75, 0, 130) -- Purple
+    sliderFrame.BackgroundTransparency = 0.3
+    sliderFrame.Parent = parent
+
+    -- Add UI Corner to slider frame
+    local sliderFrameCorner = Instance.new("UICorner")
+    sliderFrameCorner.CornerRadius = UDim.new(0, 10)
+    sliderFrameCorner.Parent = sliderFrame
+
+    local sliderLabel = Instance.new("TextLabel")
+    sliderLabel.Size = UDim2.new(0, 200, 0, 30)
+    sliderLabel.Position = UDim2.new(0.5, -100, 0, 120)
+    sliderLabel.Text = sliderName .. " Value: " .. minValue
+    sliderLabel.TextColor3 = Color3.fromRGB(255, 255, 255) -- White text
+    sliderLabel.Font = Enum.Font.Gotham
+    sliderLabel.TextSize = 20
+    sliderLabel.BackgroundTransparency = 1
+    sliderLabel.Parent = parent
+
+    local sliderKnob = Instance.new("Frame")
+    sliderKnob.Size = UDim2.new(0, 20, 0, 20)
+    sliderKnob.Position = UDim2.new(0, 0, 0, -0.25)
+    sliderKnob.BackgroundColor3 = Color3.fromRGB(255, 0, 255) -- Pink
+    sliderKnob.Parent = sliderFrame
+
+    -- Add UI Corner to slider knob to make it circular
+    local sliderKnobCorner = Instance.new("UICorner")
+    sliderKnobCorner.CornerRadius = UDim.new(1, 0)
+    sliderKnobCorner.Parent = sliderKnob
+
+    local function updateSliderValue()
+        local relativePos = (sliderKnob.Position.X.Scale * sliderFrame.AbsoluteSize.X) / sliderFrame.AbsoluteSize.X
+        local value = math.floor(relativePos * (maxValue - minValue) + minValue)
+        sliderLabel.Text = sliderName .. " Value: " .. value
+    end
+
+    local dragging = false
+
+    -- Smooth drag animation for the knob
+    sliderKnob.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+        end
+    end)
+
+    sliderKnob.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
+        end
+    end)
+
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local sliderPos = UDim2.new(math.clamp(input.Position.X - sliderFrame.AbsolutePosition.X, 0, sliderFrame.AbsoluteSize.X) / sliderFrame.AbsoluteSize.X, 0, -0.25, 0)
+            sliderKnob.Position = sliderPos
+            updateSliderValue()
+        end
+    end)
+
+    -- Initialize the slider value
+    updateSliderValue()
+
+    return sliderFrame
+end
+
+
